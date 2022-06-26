@@ -28,22 +28,35 @@ class LoginViewController: BaseViewController, UITextFieldDelegate {
     let tableView = UITableView()
     
     var dataSource = ["65", "62", "63"]
+    var loginDataSource: LoginViewDataSource?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
+        setupDelegateTextfield()
+        setupTableView()
+    }
+    
+    // MARK: - Setup Textfield
+    func setupDelegateTextfield(){
         passwordTf.enablePasswordToggle()
         phoneNumberTf.delegate = self
         passwordTf.delegate = self
         phoneNumberTf.addTarget(self, action: #selector(checkTextFieldIsEmpty), for: .editingChanged)
         passwordTf.addTarget(self, action: #selector(checkTextFieldIsEmpty), for: .editingChanged)
-        
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
-        tableView.delegate = self
-        tableView.dataSource = self
     }
     
+    
+    // MARK: - Setup TableView
+    func setupTableView(){
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        loginDataSource = LoginViewDataSource(view: self, tableView: tableView, dataSource: dataSource)
+        tableView.delegate = loginDataSource
+        tableView.dataSource = loginDataSource
+    }
+    
+    // MARK: - Setup textField is Empty in view will appear
     override func viewWillAppear(_ animated: Bool) {
         passwordTf.text = ""
         phoneNumberTf.text = ""
@@ -52,16 +65,23 @@ class LoginViewController: BaseViewController, UITextFieldDelegate {
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
+    // MARK: - Hide navigationBar when push
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
     }
     
+    // MARK: - Validate textfield is empty
     @objc func checkTextFieldIsEmpty(){
         viewModel.checkTextFieldIsEmpty(phoneNumberTf: phoneNumberTf, passwordTf: passwordTf, signBtn: signBtn)
     }
     
     @IBAction func signBtnSelected(){
+        signApp()
+    }
+    
+    // MARK: - Show error if input wrong number and if number is correct show popup success
+    func signApp(){
         showActivityIndicator()
         viewModel.showErrors.bind { [weak self](error) in
             guard let self = self else { return }
@@ -76,6 +96,7 @@ class LoginViewController: BaseViewController, UITextFieldDelegate {
         viewModel.signIn(id: areaNumberLbl.text ?? "65",phoneNumber: phoneNumber, pass: password)
     }
     
+    // MARK: - Show dropdown area number
     @IBAction func selectedPhoneNumberArea(_ sender: UIButton){
         addTransparentView(frames: sender.frame)
     }
@@ -117,26 +138,3 @@ class LoginViewController: BaseViewController, UITextFieldDelegate {
         }, completion: nil)
     }
 }
-
-extension LoginViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataSource.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.text = dataSource[indexPath.row]
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 13.0)
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 50
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        areaNumberLbl.text = dataSource[indexPath.row]
-        removeTransparentView()
-    }
-}
-

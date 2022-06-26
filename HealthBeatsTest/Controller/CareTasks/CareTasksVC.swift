@@ -8,7 +8,7 @@
 import UIKit
 
 class CareTasksVC: BaseViewController {
-
+    
     @IBOutlet weak var tableView: UITableView!
     
     var dataSource: CoreTaskVCDataSorce?
@@ -16,6 +16,11 @@ class CareTasksVC: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupTableView()
+    }
+    
+    // MARK: -Setup Tableview
+    func setupTableView(){
         self.title = "CareTask"
         fontFirstShow = true
         dataSource = CoreTaskVCDataSorce(tableView: tableView, view: self, fontFirstShow: fontFirstShow)
@@ -24,6 +29,7 @@ class CareTasksVC: BaseViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Log Out", style: .done, target: self, action: #selector(logOutDidTap))
     }
     
+    // MARK: -Remove preference after click logout button
     @objc func logOutDidTap(sender: UIBarButtonItem) {
         Prefs.removeData(.login)
         
